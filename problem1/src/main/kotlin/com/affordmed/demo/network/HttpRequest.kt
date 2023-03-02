@@ -14,7 +14,7 @@ class HttpRequest(
             return HttpInterfaceImpl(HttpClient(Android) {
                 followRedirects = true
                 install(HttpTimeout) {
-                    requestTimeoutMillis = 80
+//                    requestTimeoutMillis = 80
                 }
             })
         }
@@ -25,6 +25,6 @@ class HttpRequest(
      *
      * @return Text format of entire webpage for given [url]
      */
-    suspend fun getResponse(): String? = withContext(Dispatchers.IO) { createClient().getData(url) }
+    suspend fun getResponse() = withContext(Dispatchers.IO) { createClient().getData(url) }
 
 }

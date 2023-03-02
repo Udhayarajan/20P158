@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController
  * Created on 02-03-2023
  */
 
-private val dataset = arrayOf(
+private val dataset = listOf(
     "Java",
     "Python",
-    "C++",
+    "Cpp",
     "JavaScript",
     "Swift",
     "Kotlin",
@@ -29,7 +29,6 @@ private val dataset = arrayOf(
     "Objective-C",
     "TypeScript",
     "Haskell",
-    "F#",
     "Dart",
     "Rust",
     "Visual Basic",
@@ -37,7 +36,7 @@ private val dataset = arrayOf(
     "COBOL",
     "Fortran",
     "Lisp"
-)
+).map { it.lowercase() }
 private const val FOUND = "found"
 private const val NOT_FOUND = "not_found"
 
@@ -47,13 +46,21 @@ class ApiController {
     @GetMapping("prefixes")
     fun prefixes(
         @RequestParam("keywords") keywordString: String
-    ) {
-        val keywords = keywordString.split(".")
-        val result = keywords.map { keyword ->
+    ): List<Response> {
+        val keywords = keywordString.split(",")
+        val result = keywords.map { it ->
+            val keyword = it.lowercase()
+            var prefix = ""
+            for (c in keyword) {
+                prefix += c
+                if (dataset.count { it.startsWith(prefix) } == 1)
+                    break
+            }
             if (keyword in dataset)
-                Response(keyword, FOUND, "")
+                Response(keyword, FOUND, prefix)
             else
-                Response(keyword, NOT_FOUND, "")
+                Response(keyword, NOT_FOUND, "not_applicable")
         }
+        return result
     }
 }

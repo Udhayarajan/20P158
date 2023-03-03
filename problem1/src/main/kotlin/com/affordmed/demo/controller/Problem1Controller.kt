@@ -3,9 +3,14 @@ package com.affordmed.demo.controller
 import com.affordmed.demo.model.Response
 import com.affordmed.demo.network.HttpRequest
 import com.affordmed.demo.util.toURL
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 
 /**
@@ -20,18 +25,22 @@ class Problem1Controller {
     suspend fun numbers(
         @RequestParam("url") urls: List<String>
     ): Response {
-        val validUrls = urls.map {
-            if (it.toURL() != null)
-                HttpRequest(it).getResponse()
-            else null
+        val response = getResponses(urls)
+        val unique = TreeSet<Int>()
+        response.forEach {
+            it?.let { it1 -> unique.addAll(it1) }
         }
-        var unique = mutableSetOf<Int>()
-        validUrls.forEach {
-            it?.let {
-                unique.addAll(it.numbers)
+        return Response(unique)
+    }
+
+    suspend fun getResponses(urls: List<String?>): List<SortedSet<Int>?> {
+        val numbers = mutableListOf<Deferred<SortedSet<Int>?>>()
+        coroutineScope {
+            for (url in urls) {
+                val response = async { url?.toURL()?.toString()?.let { HttpRequest(it).getResponse()?.numbers } }
+                numbers.add(response)
             }
         }
-        unique = unique.toSortedSet()
-        return Response(unique.toList())
+        return numbers.awaitAll()
     }
 }

@@ -14,7 +14,7 @@ class HttpRequest(
             return HttpInterfaceImpl(HttpClient(Android) {
                 followRedirects = true
                 install(HttpTimeout) {
-//                    requestTimeoutMillis = 80
+                    requestTimeoutMillis = 500
                 }
             })
         }
